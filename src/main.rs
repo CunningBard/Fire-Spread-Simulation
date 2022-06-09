@@ -174,7 +174,7 @@ impl Grid {
 }
 
 
-#[macroquad::main("BasicShapes")]
+#[macroquad::main("Fire Spreading Simulation")]
 async fn main() {
     let mut g = Grid::grid(200, 200);
     g.random_burn();
@@ -184,11 +184,11 @@ async fn main() {
         for y in &g.grid {
             for point in y {
                 if point.is_burning {
-                    draw_rectangle(point.position.x as f32, point.position.y as f32, 1.0, 1.0, RED);
+                    draw_rectangle((point.position.x * 4) as f32, (point.position.y * 4) as f32, 4.0, 4.0, RED);
                 } else if point.burnt{
-                    draw_rectangle(point.position.x as f32, point.position.y as f32, 1.0, 1.0, BLACK);
+                    draw_rectangle((point.position.x * 4) as f32, (point.position.y * 4) as f32, 4.0, 4.0, BLACK);
                 } else {
-                    draw_rectangle(point.position.x as f32, point.position.y as f32, 1.0, 1.0, GREEN);
+                    draw_rectangle((point.position.x * 4) as f32, (point.position.y * 4) as f32, 4.0, 4.0, GREEN);
                 }
             }
         }
