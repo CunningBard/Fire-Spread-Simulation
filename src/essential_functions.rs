@@ -5,12 +5,7 @@ use rand::seq::SliceRandom;
 pub fn rand_prob_(number: i32, to: i32) -> bool
 {
     let num = thread_rng().gen_range(0..to);
-    if number > num {
-        true
-    }
-    else {
-        false
-    }
+    number > num
 }
 
 pub fn rand_prob(number: i32) -> bool
