@@ -22,6 +22,8 @@ pub fn vec_shuffle<T>(vec: &mut Vec<T>)
     vec.shuffle(&mut thread_rng());
 }
 
+pub fn rand_item_index<T>(vec: Vec<T>) -> usize {rand_range(0, vec.len() as i32) as usize}
+
 pub fn rand_number_increase_prob(mut start_prob: i32, minus_per_iteration: i32) -> i32
 {
     let mut res = rand_prob(start_prob);
