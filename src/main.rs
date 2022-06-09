@@ -84,8 +84,8 @@ struct Grid
     size_x: i32,
     size_y: i32,
     grid: Vec<Vec<BurnablePoint>>,
+    check_burning_positions: Vec<Vec<bool>>,
     burning_positions: Vec<Position>,
-    burnt_positions: Vec<Position>
 }
 
 impl Grid {
@@ -98,19 +98,31 @@ impl Grid {
             }
             grid.push(y_axis);
         }
+
+        let mut check_burning_positions = vec![];
+        for _y in 0..size_y {
+            let mut y_axis = vec![];
+            for _x in 0..size_x {
+                y_axis.push(false)
+            }
+            check_burning_positions.push(y_axis);
+        }
+
         Grid {
             grid,
             size_x,
             size_y,
-            burning_positions: vec![],
-            burnt_positions: vec![]
+            check_burning_positions,
+            burning_positions: vec![]
         }
     }
     fn random_burn(&mut self){
         let rand_y = rand_range(0, 100);
         let rand_x = rand_range(0, 100);
         self.grid[rand_y as usize][rand_x as usize].burn();
-        self.burning_positions.push(Position{ x: rand_x, y: rand_y })
+        self.burning_positions.push(Position{ x: rand_x, y: rand_y });
+        self.check_burning_positions[rand_y as usize].remove(rand_x as usize);
+        self.check_burning_positions[rand_y as usize].insert(rand_x as usize, true);
     }
 
     fn handle(&mut self){
@@ -134,10 +146,6 @@ impl Grid {
         for to_remove in remove {
             self.burning_positions.remove(to_remove);
         }
-
-        for pos in remove_pos{
-            self.burnt_positions.push(pos);
-        }
         // add remove thing from burning pos
         for burn_now in &to_burn {
             let mut points = surrounding_position(burn_now, self.size_x - 1, 0, self.size_y - 1, 0);
@@ -145,15 +153,8 @@ impl Grid {
             let mut to_remove = vec![];
             for point in &points {
                 ind += 1;
-                for point_ in &self.burning_positions {
-                    if point == point_{
-                        to_remove.push(ind);
-                    }
-                }
-                for point_ in &self.burnt_positions {
-                    if point == point_{
-                        to_remove.push(ind);
-                    }
+                if self.check_burning_positions[point.y as usize][point.x as usize]{
+                    to_remove.push(ind);
                 }
             }
             to_remove.reverse();
@@ -164,6 +165,9 @@ impl Grid {
                 let burn_point = points[rand_item_index(points.clone())];
                 self.grid[burn_point.y as usize][burn_point.x as usize].burn();
                 self.burning_positions.push(burn_point);
+                self.check_burning_positions[burn_point.y as usize].remove(burn_point.x as usize);
+                self.check_burning_positions[burn_point.y as usize].insert(burn_point.x as usize, true);
+
             }
         }
     }
@@ -172,7 +176,7 @@ impl Grid {
 
 #[macroquad::main("BasicShapes")]
 async fn main() {
-    let mut g = Grid::grid(100, 100);
+    let mut g = Grid::grid(200, 200);
     g.random_burn();
     loop {
         clear_background(WHITE);
