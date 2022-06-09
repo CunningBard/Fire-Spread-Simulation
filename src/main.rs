@@ -1,8 +1,8 @@
 mod essential_functions;
-
 use ggez::{Context, ContextBuilder, GameResult};
 use ggez::graphics::{self, Color};
 use ggez::event::{self, EventHandler};
+use crate::essential_functions::rand_range;
 
 #[derive(PartialEq, Debug)]
 struct Position
@@ -25,6 +25,7 @@ impl Position
 struct BurnablePoint
 {
     is_burning: bool,
+    burnt: bool,
     burning_level: i8,
     position: Position
 }
@@ -34,8 +35,23 @@ impl BurnablePoint
     fn burnable_point(position: Position )-> BurnablePoint{
         BurnablePoint {
             is_burning: false,
+            burnt: false,
             burning_level: 0,
             position
+        }
+    }
+    fn burn(&mut self){
+        if self.is_burning {
+            if self.burning_level > 5 {
+                self.is_burning = false;
+                self.burning_level = 0;
+                self.burnt = true;
+            } else {
+            self.burning_level += 1;
+            }
+        } else {
+            self.is_burning = true;
+            self.burning_level += 1;
         }
     }
 }
@@ -67,7 +83,9 @@ impl Grid {
         }
     }
     fn random_burn(&mut self){
-        let
+        let rand_y = rand_range(0, 100);
+        let rand_x = rand_range(0, 100);
+        self.grid[rand_y][rand_x].burn();
     }
 }
 
