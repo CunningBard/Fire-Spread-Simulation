@@ -176,7 +176,12 @@ impl Grid {
 
 #[macroquad::main("Fire Spreading Simulation")]
 async fn main() {
-    let mut g = Grid::grid(200, 200);
+    let size = 4;
+    if !vec![1, 2, 4, 8].contains(&size){
+        error!("size must be able to divide 8 without remainders")
+    }
+    let tile = (8 / size);
+    let mut g = Grid::grid(size * 100, size * 100);
     g.random_burn();
     loop {
         clear_background(WHITE);
@@ -184,11 +189,11 @@ async fn main() {
         for y in &g.grid {
             for point in y {
                 if point.is_burning {
-                    draw_rectangle((point.position.x * 4) as f32, (point.position.y * 4) as f32, 4.0, 4.0, RED);
+                    draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, RED);
                 } else if point.burnt{
-                    draw_rectangle((point.position.x * 4) as f32, (point.position.y * 4) as f32, 4.0, 4.0, BLACK);
+                    draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, BLACK);
                 } else {
-                    draw_rectangle((point.position.x * 4) as f32, (point.position.y * 4) as f32, 4.0, 4.0, GREEN);
+                    draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, GREEN);
                 }
             }
         }
