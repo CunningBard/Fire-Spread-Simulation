@@ -21,7 +21,10 @@ git clone https://github.com/CunningBard/Fire-Spread-Simulation.git
 go to https://github.com/CunningBard/Fire-Spread-Simulation
 then press the code button, then download zip.
 
-extract the zip and open cmd in the directory then run 
+extract the zip and open cmd in the directory
+
+
+after getting the repo run 
 ```
 cargo run --release
 ```
