@@ -26,7 +26,7 @@ extract the zip and open cmd in the directory then run
 cargo run --release
 ```
 
-then press 1 on the keyboard to run
+# then press 1 on the keyboard to run
 
 ## Sims on going
 1 Tree = 4 pixels
