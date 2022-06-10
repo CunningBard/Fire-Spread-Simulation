@@ -1,7 +1,8 @@
 mod essential_functions;
 
+use macroquad::input::KeyCode;
 use macroquad::prelude::*;
-use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range};
+use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range, switch_bool};
 
 const BURN_SURROUNDING_PROBABILITY: i32 = 30;
 const BURN_LIFETIME: u8 = 5;
@@ -83,7 +84,7 @@ struct Grid
 {
     size_x: i32,
     size_y: i32,
-    grid: Vec<Vec<BurnablePoint>>,
+    pub grid: Vec<Vec<BurnablePoint>>,
     check_burning_positions: Vec<Vec<bool>>,
     burning_positions: Vec<Position>,
 }
@@ -117,8 +118,8 @@ impl Grid {
         }
     }
     fn random_burn(&mut self){
-        let rand_y = rand_range(0, 100);
-        let rand_x = rand_range(0, 100);
+        let rand_y = rand_range(0, self.size_x);
+        let rand_x = rand_range(0, self.size_y);
         self.grid[rand_y as usize][rand_x as usize].burn();
         self.burning_positions.push(Position{ x: rand_x, y: rand_y });
         self.check_burning_positions[rand_y as usize].remove(rand_x as usize);
@@ -176,24 +177,44 @@ impl Grid {
 
 #[macroquad::main("Fire Spreading Simulation")]
 async fn main() {
-    let size = 4;
+    let mut to_handle = false;
+    let size = 8;
     if !vec![1, 2, 4, 8].contains(&size){
-        error!("size must be able to divide 8 without remainders")
+        error!("size must be able to divide 8 without remainders 1, 2, 4, 8")
     }
     let tile = (8 / size);
     let mut g = Grid::grid(size * 100, size * 100);
     g.random_burn();
     loop {
-        clear_background(WHITE);
-        g.handle();
+        clear_background(GREEN);
+
+
+        if is_key_pressed(KeyCode::Key1){
+            to_handle = switch_bool(to_handle);
+        }
+
+
+        if to_handle
+        {
+            g.handle();
+        } else if is_mouse_button_down(MouseButton::Left){
+            let m_pos = mouse_position();
+            let mut gg = &mut g.grid[(m_pos.1 as i32 / tile) as usize][(m_pos.0 as i32 / tile) as usize];
+            if !gg.burnt{
+                gg.is_burning = false;
+                gg.burning_level = 0;
+                gg.burnt = true;
+                g.check_burning_positions[gg.position.y as usize].remove(gg.position.x as usize);
+                g.check_burning_positions[gg.position.y as usize].insert(gg.position.x as usize, true);
+            }
+        }
+
         for y in &g.grid {
             for point in y {
                 if point.is_burning {
                     draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, RED);
                 } else if point.burnt{
                     draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, BLACK);
-                } else {
-                    draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, GREEN);
                 }
             }
         }
