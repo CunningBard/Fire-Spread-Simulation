@@ -177,16 +177,22 @@ impl Grid {
 
 #[macroquad::main("Fire Spreading Simulation")]
 async fn main() {
+    for _ in 0..10{
+        println!("PRESS 1 TO RUN");
+    }
     let mut to_handle = false;
-    let size = 8;
+    let size = 2;
     if !vec![1, 2, 4, 8].contains(&size){
-        error!("size must be able to divide 8 without remainders 1, 2, 4, 8")
+        panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
     }
     let tile = (8 / size);
     let mut g = Grid::grid(size * 100, size * 100);
     g.random_burn();
     loop {
         clear_background(GREEN);
+        if is_key_pressed(KeyCode::Escape){
+            break
+        }
 
 
         if is_key_pressed(KeyCode::Key1){
