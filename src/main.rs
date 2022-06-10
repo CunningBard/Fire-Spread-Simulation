@@ -180,7 +180,7 @@ async fn main() {
     for _ in 0..10{
         println!("PRESS 1 TO RUN");
     }
-    let mut to_handle = true;
+    let mut to_handle = false;
     let size = 8;
     if !vec![1, 2, 4, 8].contains(&size){
         panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")

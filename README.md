@@ -18,7 +18,7 @@ git clone https://github.com/CunningBard/Fire-Spread-Simulation.git
 ```
 
 ### if you dont have git installed
-go to https://github.com/CunningBard/Fire-Spread-Simulation.git 
+go to https://github.com/CunningBard/Fire-Spread-Simulation
 then press the code button, then download zip.
 
 extract the zip and open cmd in the directory then run 
