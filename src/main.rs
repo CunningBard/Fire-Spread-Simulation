@@ -3,6 +3,7 @@ mod essential_functions;
 use macroquad::input::KeyCode;
 use macroquad::prelude::*;
 use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range, switch_bool};
+use crate::miniquad::conf::Icon;
 
 const BURN_SURROUNDING_PROBABILITY: i32 = 30;
 const BURN_LIFETIME: u8 = 5;
@@ -174,14 +175,26 @@ impl Grid {
     }
 }
 
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "Fire Spreading Simulation".to_owned(),
+        window_width: 800,
+        window_height: 800,
+        high_dpi: false,
+        fullscreen: false,
+        sample_count: 1,
+        window_resizable: true,
+        icon: Some(Icon::miniquad_logo()),
+    }
+}
 
-#[macroquad::main("Fire Spreading Simulation")]
+#[macroquad::main(window_conf())]
 async fn main() {
     for _ in 0..10{
         println!("PRESS 1 TO RUN");
     }
     let mut to_handle = false;
-    let size = 8;
+    let size = 4;
     if !vec![1, 2, 4, 8].contains(&size){
         panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
     }
