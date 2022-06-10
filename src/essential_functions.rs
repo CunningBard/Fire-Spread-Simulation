@@ -21,7 +21,7 @@ pub fn vec_shuffle<T>(vec: &mut Vec<T>)
 
 pub fn rand_item_index<T>(vec: Vec<T>) -> usize {rand_range(0, vec.len() as i32) as usize}
 
-fn switch_bool(boolean: bool) -> bool { !boolean }
+pub fn switch_bool(boolean: bool) -> bool { !boolean }
 
 pub fn rand_prob_(number: i32, to: i32) -> bool
 {
