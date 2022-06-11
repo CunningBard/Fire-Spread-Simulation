@@ -137,11 +137,11 @@ impl Grid {
             let bp: &mut BurnablePoint = &mut self.grid[pos.y as usize][pos.x as usize];
             if bp.is_burning{
                 if bp.burn(){
-                    to_burn.push(pos.clone());
+                    to_burn.push(*pos);
                 }
             } else {
                 remove.push(ind as usize);
-                remove_pos.push(pos.clone());
+                remove_pos.push(*pos);
             }
         }
         remove.reverse();
@@ -161,9 +161,9 @@ impl Grid {
             }
             to_remove.reverse();
             for remove_point in to_remove {
-                &points.remove(remove_point as usize);
+                points.remove(remove_point as usize);
             }
-            if points.len() > 0 {
+            if !points.is_empty(){
                 let burn_point = points[rand_item_index(points.clone())];
                 self.grid[burn_point.y as usize][burn_point.x as usize].burn();
                 self.burning_positions.push(burn_point);
@@ -194,11 +194,11 @@ async fn main() {
         println!("PRESS 1 TO RUN");
     }
     let mut to_handle = false;
-    let size = 4;
+    let size = 8;
     if !vec![1, 2, 4, 8].contains(&size){
         panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
     }
-    let tile = (8 / size);
+    let tile = 8 / size;
     let mut g = Grid::grid(size * 100, size * 100);
     g.random_burn();
     loop {
