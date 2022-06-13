@@ -38,4 +38,4 @@ cargo run --release
 
 4 random burns (two got merged)
 
-1[4 random burns (two got merged)](https://i.ibb.co/c8CZDtZ/image.png)
+![4 random burns (two got merged)](https://i.ibb.co/c8CZDtZ/image.png)
