@@ -2,9 +2,8 @@ mod essential_functions;
 
 use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range, switch_bool};
 use ggez::{Context, ContextBuilder, GameResult};
-use ggez::graphics::{self, Color, DrawMode, Mesh, MeshBuilder, Rect};
+use ggez::graphics::{self, Color};
 use ggez::event::{self, EventHandler};
-use glam;
 
 
 const BURN_SURROUNDING_PROBABILITY: i32 = 30;
@@ -36,18 +35,16 @@ struct BurnablePoint
     burnt: bool,
     burning_level: u8,
     position: (i32, i32),
-    draw_position: (f32, f32),
 }
 
 impl BurnablePoint
 {
-    fn default(position: (i32, i32), tile_size: i32) -> Self {
+    fn default(position: (i32, i32)) -> Self {
         Self {
             is_burning: false,
             burnt: false,
             burning_level: 0,
-            position,
-            draw_position: ((position.0 * tile_size) as f32, (position.1 * tile_size) as f32)
+            position
         }
     }
     fn burn(&mut self) -> bool {
@@ -77,16 +74,14 @@ struct Grid
     grid: Vec<Vec<BurnablePoint>>,
     check_burning_positions: Vec<Vec<bool>>,
     burning_positions: Vec<(i32, i32)>,
-    dead_pos: Vec<(f32, f32)>,
-    previous_grid: Vec<Vec<BurnablePoint>>
 }
 impl Grid {
-    fn default(size_y: i32, size_x: i32, tile_size: i32) -> Self {
+    fn default(size_y: i32, size_x: i32) -> Self {
         let mut grid = vec![];
         for y in 0..size_y {
             let mut y_axis = vec![];
             for x in 0..size_x {
-                y_axis.push(BurnablePoint::default((x, y), tile_size))
+                y_axis.push(BurnablePoint::default((x, y)))
             }
             grid.push(y_axis);
         }
@@ -106,8 +101,6 @@ impl Grid {
             size_y,
             check_burning_positions,
             burning_positions: vec![],
-            dead_pos: vec![],
-            previous_grid: vec![]
         }
     }
 
@@ -121,7 +114,6 @@ impl Grid {
     }
 
     fn handle(&mut self){
-        self.previous_grid = self.grid.clone();
         let mut to_burn: Vec<(i32, i32)> = vec![];
         let mut remove = vec![];
         let mut remove_pos = vec![];
@@ -134,7 +126,6 @@ impl Grid {
                     to_burn.push(*pos);
                 }
             } else {
-                self.dead_pos.push(bp.draw_position);
                 remove.push(ind as usize);
                 remove_pos.push(*pos);
             }
@@ -205,7 +196,7 @@ fn main() {
     // Create an instance of your event handler.
     // Usually, you should provide it with the Context object to
     // use when setting your game up.
-    let my_game = MyGame::new(&mut ctx, 8);
+    let my_game = MyGame::new(&mut ctx);
 
     // Run!
     event::run(ctx, event_loop, my_game);
@@ -213,30 +204,18 @@ fn main() {
 
 
 struct MyGame {
-    grid: Grid,
-    tile_size: f32,
+    grid: Grid
 }
 
 impl MyGame {
-    pub fn new(_ctx: &mut Context, size: i32) -> Self {
-        // fps 70 -> 10         80 -> 10 no changes?
-        // fps 70 -> 37
-    if !vec![1, 2, 4, 8].contains(&size){
-        panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
-    }
-    let tile_size = (8 / size) as f32;
-    let mut grid = Grid::default(size * 100, size * 100, tile_size as i32);
+    pub fn new(_ctx: &mut Context) -> Self {
+    let mut grid = Grid::default(800, 800);
     grid.random_burn();
         
         Self {
-            grid,
-            tile_size,
+            grid
         }
     }
-}
-
-fn draw_rect(builder: &mut MeshBuilder, x: f32, y: f32, w: f32, h: f32, color: Color) -> GameResult<&mut MeshBuilder> {
-    builder.rectangle(DrawMode::fill(),Rect::new(x, y, w, h ), color)
 }
 
 impl EventHandler for MyGame {
@@ -268,7 +247,8 @@ impl EventHandler for MyGame {
                 }
             }
         }
-        let res = graphics::Image::from_rgba8(ctx, 800, 800, &g)?;
+        let res = graphics::Image::from_rgba8(ctx, self.grid.size_x as u16,
+                                              self.grid.size_y as u16, &g)?;
 
         graphics::draw(ctx, &res, (glam::vec2(0.0, 0.0), 0.0, Color::WHITE))?;
         // println!("{:?}", now.elapsed());
