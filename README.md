@@ -1,6 +1,8 @@
 # Fire-Spread-Simulation
 A simulation about fire spreading, built on rust.
 
+# Note: you're trying to access **THE LATEST BRANCH**, I suggest you looking at main branch
+
 ## Rules
 The Simulation will randomly burn 1 tree, the tree will be burning for
 5 turns, and with each turn, there is a 30% chance the tree will burn
