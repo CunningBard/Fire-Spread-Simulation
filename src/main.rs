@@ -3,7 +3,8 @@ mod essential_functions;
 use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range, switch_bool};
 use ggez::{Context, ContextBuilder, GameResult};
 use ggez::graphics::{self, Color};
-use ggez::event::{self, EventHandler};
+use ggez::input::{mouse, keyboard};
+use ggez::event::{self, EventHandler, KeyCode, MouseButton};
 
 
 const BURN_SURROUNDING_PROBABILITY: i32 = 30;
@@ -39,7 +40,7 @@ struct BurnablePoint
 
 impl BurnablePoint
 {
-    fn default(position: (i32, i32)) -> Self {
+    fn new(position: (i32, i32)) -> Self {
         Self {
             is_burning: false,
             burnt: false,
@@ -76,12 +77,12 @@ struct Grid
     burning_positions: Vec<(i32, i32)>,
 }
 impl Grid {
-    fn default(size_y: i32, size_x: i32) -> Self {
+    fn new(size_x: i32, size_y: i32) -> Self {
         let mut grid = vec![];
         for y in 0..size_y {
             let mut y_axis = vec![];
             for x in 0..size_x {
-                y_axis.push(BurnablePoint::default((x, y)))
+                y_axis.push(BurnablePoint::new((x, y)))
             }
             grid.push(y_axis);
         }
@@ -105,8 +106,8 @@ impl Grid {
     }
 
     fn random_burn(&mut self){
-        let rand_y = rand_range(0, self.size_x);
-        let rand_x = rand_range(0, self.size_y);
+        let rand_y = rand_range(0, self.size_y);
+        let rand_x = rand_range(0, self.size_x);
         self.grid[rand_y as usize][rand_x as usize].burn();
         self.burning_positions.push((rand_x, rand_y));
         self.check_burning_positions[rand_y as usize].remove(rand_x as usize);
@@ -161,71 +162,68 @@ impl Grid {
     }
 }
 
-//     let mut to_handle = false;
-
-//         if is_key_pressed(KeyCode::Key1){
-//             to_handle = switch_bool(to_handle);
-//         }
-//         if to_handle
-//         {
-//             g.handle();
-//         } else if is_mouse_button_down(MouseButton::Left){
-//             let m_pos = mouse_position();
-//             let mut gg = &mut g.grid[(m_pos.1 as i32 / tile) as usize][(m_pos.0 as i32 / tile) as usize];
-//             if !gg.burnt{
-//                 gg.is_burning = false;
-//                 gg.burning_level = 0;
-//                 gg.burnt = true;
-//                 g.check_burning_positions[gg.position.y as usize].remove(gg.position.x as usize);
-//                 g.check_burning_positions[gg.position.y as usize].insert(gg.position.x as usize, true);
-//             }
-//         }
-
 
 fn main() {
     for _ in 0..10{
-        println!("// PRESS 1 TO RUN");
+        println!("PRESS 1 TO RUN");
     }
-    let mut to_handle = false;
 
-    // Make a Context.
     let (mut ctx, event_loop) = ContextBuilder::new("fireSpreadSim", "CunningBard")
         .build()
         .expect("aieee, could not create ggez context!");
 
-    // Create an instance of your event handler.
-    // Usually, you should provide it with the Context object to
-    // use when setting your game up.
-    let my_game = MyGame::new(&mut ctx);
-
-    // Run!
+    let my_game = MyGame::new(&mut ctx, 800, 600, 1);
     event::run(ctx, event_loop, my_game);
 }
 
 
 struct MyGame {
-    grid: Grid
+    grid: Grid,
+    to_handle: bool
 }
 
 impl MyGame {
-    pub fn new(_ctx: &mut Context) -> Self {
-    let mut grid = Grid::default(800, 800);
-    grid.random_burn();
+    pub fn new(_ctx: &mut Context, size_x: i32, size_y: i32,  random_burns: i32) -> Self {
+        let mut grid = Grid::new(size_x, size_y);
+        for _ in 0..random_burns {
+            grid.random_burn()
+        }
         
         Self {
-            grid
+            grid,
+            to_handle: false
         }
     }
 }
 
 impl EventHandler for MyGame {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        self.grid.handle();
+        if keyboard::is_key_pressed(_ctx, KeyCode::Key1){
+            self.to_handle = switch_bool(self.to_handle);
+        }
+
+        if self.to_handle {
+            self.grid.handle();
+        } else {
+            if mouse::button_pressed(_ctx, MouseButton::Left){
+                let m_pos = mouse::position(_ctx);
+                if m_pos.x >= 0.0 && m_pos.x <= self.grid.size_x as f32 && m_pos.y >= 0.0 && m_pos.y <= self.grid.size_y as f32 {
+                let mut gg = &mut self.grid.grid[m_pos.y as i32 as usize][m_pos.x as i32  as usize];
+                    if !gg.burnt {
+                        gg.is_burning = false;
+                        gg.burning_level = 0;
+                        gg.burnt = true;
+                        self.grid.check_burning_positions[gg.position.1 as usize].remove(gg.position.0 as usize);
+                        self.grid.check_burning_positions[gg.position.1 as usize].insert(gg.position.0 as usize, true);
+                    }
+                }
+            }
+        }
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx, Color::GREEN);
+        graphics::clear(ctx, Color::from((236, 236, 236, 255)));
         let mut g = vec![];
         for y in &self.grid.grid {
             for x in y{
@@ -241,9 +239,9 @@ impl EventHandler for MyGame {
                     g.push(255);
                 } else {
                     g.push(0);
+                    g.push(255);
                     g.push(0);
-                    g.push(0);
-                    g.push(0);
+                    g.push(255);
                 }
             }
         }
