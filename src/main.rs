@@ -77,6 +77,7 @@ struct Grid
     pub grid: Vec<Vec<BurnablePoint>>,
     check_burning_positions: Vec<Vec<bool>>,
     burning_positions: Vec<(i32, i32)>,
+    dead_pos: Vec<(f32, f32)>
 }
 impl Grid {
     fn default(size_y: i32, size_x: i32, tile_size: i32) -> Self {
@@ -103,7 +104,8 @@ impl Grid {
             size_x,
             size_y,
             check_burning_positions,
-            burning_positions: vec![]
+            burning_positions: vec![],
+            dead_pos: vec![]
         }
     }
 
@@ -129,6 +131,7 @@ impl Grid {
                     to_burn.push(*pos);
                 }
             } else {
+                self.dead_pos.push(bp.draw_position);
                 remove.push(ind as usize);
                 remove_pos.push(*pos);
             }
@@ -225,7 +228,7 @@ fn main() {
     let mut to_handle = false;
 
     // Make a Context.
-    let (mut ctx, event_loop) = ContextBuilder::new("my_game", "Cool Game Author")
+    let (mut ctx, event_loop) = ContextBuilder::new("fireSpreadSim", "CunningBard")
         .build()
         .expect("aieee, could not create ggez context!");
 
@@ -246,7 +249,7 @@ struct MyGame {
 
 impl MyGame {
     pub fn new(_ctx: &mut Context, size: i32) -> Self {
-        // fps 70 -> 10
+        // fps 70 -> 10         80 -> 10 no changes?
         // fps 70 -> 37
     if !vec![1, 2, 4, 8].contains(&size){
         panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
@@ -262,6 +265,10 @@ impl MyGame {
     }
 }
 
+fn draw_rect(builder: &mut MeshBuilder, x: f32, y: f32, w: f32, h: f32, color: Color) -> GameResult<&mut MeshBuilder> {
+    builder.rectangle(DrawMode::fill(),Rect::new(x, y, w, h ), color)
+}
+
 impl EventHandler for MyGame {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         self.grid.handle();
@@ -272,24 +279,18 @@ impl EventHandler for MyGame {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx, Color::GREEN);
 
+        // let now = std::time::SystemTime::now();
         let mut builder = MeshBuilder::new();
-        for y in &self.grid.grid{
-            for point in y {
-                if point.is_burning{
-                    builder.rectangle(DrawMode::fill(),
-                                  Rect::new(point.draw_position.0, point.draw_position.1,
-                                            self.tile_size, self.tile_size), Color::RED)?;
-                } else if point.burnt{
-                     builder.rectangle(DrawMode::fill(),
-                                  Rect::new(point.draw_position.0, point.draw_position.1,
-                                            self.tile_size, self.tile_size ), Color::BLACK)?;
-
-                }
-            }
+        for point in &self.grid.burning_positions {
+            draw_rect(&mut builder, point.0 as f32, point.1 as f32,self.tile_size, self.tile_size, Color::RED)?;
+        }
+        for point in &self.grid.dead_pos {
+            draw_rect(&mut builder, point.0, point.1,self.tile_size, self.tile_size, Color::BLACK)?;
         }
         let res = builder.build(ctx)?;
 
         graphics::draw(ctx, &res, (glam::vec2(0.0, 0.0), 0.0, Color::WHITE))?;
+        // println!("{:?}", now.elapsed());
         graphics::present(ctx)
     }
 }
