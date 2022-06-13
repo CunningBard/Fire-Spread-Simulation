@@ -10,7 +10,7 @@ use glam;
 const BURN_SURROUNDING_PROBABILITY: i32 = 30;
 const BURN_LIFETIME: u8 = 5;
 
-fn surrounding_position(pos: &Position, max_x: i32, min_x: i32, max_y: i32, min_y: i32) -> Vec<Position>{
+fn surrounding_position(pos: &(i32, i32), max_x: i32, min_x: i32, max_y: i32, min_y: i32) -> Vec<(i32, i32)>{
     let minus_positions = vec![
     vec![-1, -1], vec![ 0, -1], vec![ 1, -1],
     vec![-1,  0],               vec![ 1,  0],
@@ -19,30 +19,13 @@ fn surrounding_position(pos: &Position, max_x: i32, min_x: i32, max_y: i32, min_
 
     let mut positions = vec![];
     for position in &minus_positions {
-        let x = pos.x + position[0];
-        let y = pos.y + position[1];
+        let x = pos.0 + position[0];
+        let y = pos.1 + position[1];
         if x >= min_x && max_x >= x && y >= min_y && max_y >= y {
-            positions.push(Position{x, y})
+            positions.push((x, y))
         }
     }
     positions
-}
-
-#[derive(PartialEq, Debug, Clone, Copy)]
-struct Position
-{
-    x: i32,
-    y: i32
-}
-
-impl Position
-{
-    fn default(x: i32, y: i32) -> Position{
-        Position{
-            x,
-            y
-        }
-    }
 }
 
 
@@ -52,19 +35,19 @@ struct BurnablePoint
     is_burning: bool,
     burnt: bool,
     burning_level: u8,
-    position: Position,
+    position: (i32, i32),
     draw_position: (f32, f32),
 }
 
 impl BurnablePoint
 {
-    fn default(position: Position, tile_size: i32) -> Self {
+    fn default(position: (i32, i32), tile_size: i32) -> Self {
         Self {
             is_burning: false,
             burnt: false,
             burning_level: 0,
             position,
-            draw_position: ((position.x * tile_size) as f32, (position.y * tile_size) as f32)
+            draw_position: ((position.0 * tile_size) as f32, (position.1 * tile_size) as f32)
         }
     }
     fn burn(&mut self) -> bool {
@@ -93,7 +76,7 @@ struct Grid
     size_y: i32,
     pub grid: Vec<Vec<BurnablePoint>>,
     check_burning_positions: Vec<Vec<bool>>,
-    burning_positions: Vec<Position>,
+    burning_positions: Vec<(i32, i32)>,
 }
 impl Grid {
     fn default(size_y: i32, size_x: i32, tile_size: i32) -> Self {
@@ -101,7 +84,7 @@ impl Grid {
         for y in 0..size_y {
             let mut y_axis = vec![];
             for x in 0..size_x {
-                y_axis.push(BurnablePoint::default(Position::default(x, y), tile_size))
+                y_axis.push(BurnablePoint::default((x, y), tile_size))
             }
             grid.push(y_axis);
         }
@@ -128,19 +111,19 @@ impl Grid {
         let rand_y = rand_range(0, self.size_x);
         let rand_x = rand_range(0, self.size_y);
         self.grid[rand_y as usize][rand_x as usize].burn();
-        self.burning_positions.push(Position{ x: rand_x, y: rand_y });
+        self.burning_positions.push((rand_x, rand_y));
         self.check_burning_positions[rand_y as usize].remove(rand_x as usize);
         self.check_burning_positions[rand_y as usize].insert(rand_x as usize, true);
     }
 
     fn handle(&mut self){
-        let mut to_burn: Vec<Position> = vec![];
+        let mut to_burn: Vec<(i32, i32)> = vec![];
         let mut remove = vec![];
         let mut remove_pos = vec![];
         let mut ind = -1;
         for pos in &self.burning_positions {
             ind += 1;
-            let bp: &mut BurnablePoint = &mut self.grid[pos.y as usize][pos.x as usize];
+            let bp: &mut BurnablePoint = &mut self.grid[pos.1 as usize][pos.0 as usize];
             if bp.is_burning{
                 if bp.burn(){
                     to_burn.push(*pos);
@@ -161,7 +144,7 @@ impl Grid {
             let mut to_remove = vec![];
             for point in &points {
                 ind += 1;
-                if self.check_burning_positions[point.y as usize][point.x as usize]{
+                if self.check_burning_positions[point.1 as usize][point.0 as usize]{
                     to_remove.push(ind);
                 }
             }
@@ -171,10 +154,10 @@ impl Grid {
             }
             if !points.is_empty(){
                 let burn_point = points[rand_item_index(points.clone())];
-                self.grid[burn_point.y as usize][burn_point.x as usize].burn();
+                self.grid[burn_point.1 as usize][burn_point.0 as usize].burn();
                 self.burning_positions.push(burn_point);
-                self.check_burning_positions[burn_point.y as usize].remove(burn_point.x as usize);
-                self.check_burning_positions[burn_point.y as usize].insert(burn_point.x as usize, true);
+                self.check_burning_positions[burn_point.1 as usize].remove(burn_point.0 as usize);
+                self.check_burning_positions[burn_point.1 as usize].insert(burn_point.0 as usize, true);
 
             }
         }
@@ -249,7 +232,7 @@ fn main() {
     // Create an instance of your event handler.
     // Usually, you should provide it with the Context object to
     // use when setting your game up.
-    let my_game = MyGame::new(&mut ctx, 4);
+    let my_game = MyGame::new(&mut ctx, 8);
 
     // Run!
     event::run(ctx, event_loop, my_game);
