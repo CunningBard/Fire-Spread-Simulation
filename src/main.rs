@@ -215,8 +215,6 @@ fn main() {
 struct MyGame {
     grid: Grid,
     tile_size: f32,
-    times: i32,
-    builder: Vec<Mesh>
 }
 
 impl MyGame {
@@ -233,8 +231,6 @@ impl MyGame {
         Self {
             grid,
             tile_size,
-            times: 0,
-            builder: vec![]
         }
     }
 }
@@ -246,43 +242,33 @@ fn draw_rect(builder: &mut MeshBuilder, x: f32, y: f32, w: f32, h: f32, color: C
 impl EventHandler for MyGame {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         self.grid.handle();
-        println!("{}", ggez::timer::fps(_ctx));
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx, Color::BLACK);
-        let mut builder = MeshBuilder::new();
-        // if self.times < 2 {
-        //     for y in 0..self.grid.size_y {
-        //         for x in 0..self.grid.size_x{
-        //             draw_rect(&mut builder, x as f32, y as f32, self.tile_size, self.tile_size, Color::GREEN)?;
-        //         }
-        //     }
-        //     self.times += 5;
-        //     println!("Sd");
-        // }
-
-        // let now = std::time::SystemTime::now();
-        // for y in 0..self.grid.size_y {
-        //     for x in 0..self.grid.size_x{
-        //         if &self.grid.grid[y as usize][x as usize] != &self.grid.previous_grid[y as usize][x as usize]{
-        //             let pos: BurnablePoint = self.grid.grid[y as usize][x as usize];
-        //             if pos.burnt{
-        //                 draw_rect(&mut builder, pos.draw_position.0, pos.draw_position.1, self.tile_size, self.tile_size, Color::BLACK)?;
-        //             } else {
-        //                 draw_rect(&mut builder, pos.draw_position.0, pos.draw_position.1, self.tile_size, self.tile_size,Color::RED)?;
-        //             }
-        //         }
-        //     }
-        // }
-        // for point in &self.grid.burning_positions {
-        //     draw_rect(&mut builder, point.0 as f32, point.1 as f32,self.tile_size, self.tile_size, Color::RED)?;
-        // }
-        // for point in &self.grid.dead_pos {
-        //     draw_rect(&mut builder, point.0, point.1,self.tile_size, self.tile_size, Color::BLACK)?;
-        // }
-        let res = builder.build(ctx)?;
+        graphics::clear(ctx, Color::GREEN);
+        let mut g = vec![];
+        for y in &self.grid.grid {
+            for x in y{
+                if x.is_burning{
+                    g.push(255);
+                    g.push(0);
+                    g.push(0);
+                    g.push(255);
+                } else if x.burnt{
+                    g.push(0);
+                    g.push(0);
+                    g.push(0);
+                    g.push(255);
+                } else {
+                    g.push(0);
+                    g.push(0);
+                    g.push(0);
+                    g.push(0);
+                }
+            }
+        }
+        let res = graphics::Image::from_rgba8(ctx, 800, 800, &g)?;
 
         graphics::draw(ctx, &res, (glam::vec2(0.0, 0.0), 0.0, Color::WHITE))?;
         // println!("{:?}", now.elapsed());
