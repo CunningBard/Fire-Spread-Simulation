@@ -10,5 +10,5 @@ ggez = "0.7.0"
 glam = "0.20.5"
 rand = "0.8.5"
 
-[profile.dev.package.'*']
+[profile.release]
 opt-level = 3
