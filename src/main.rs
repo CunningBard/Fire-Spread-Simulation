@@ -1,9 +1,10 @@
 mod essential_functions;
 
-use macroquad::input::KeyCode;
-use macroquad::prelude::*;
 use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range, switch_bool};
-use crate::miniquad::conf::Icon;
+use ggez::{Context, ContextBuilder, GameResult};
+use ggez::graphics::{self, Color};
+use ggez::event::{self, EventHandler};
+
 
 const BURN_SURROUNDING_PROBABILITY: i32 = 30;
 const BURN_LIFETIME: u8 = 5;
@@ -175,23 +176,63 @@ impl Grid {
     }
 }
 
-fn window_conf() -> Conf {
-    Conf {
-        window_title: "Fire Spreading Simulation".to_owned(),
-        window_width: 800,
-        window_height: 800,
-        high_dpi: false,
-        fullscreen: false,
-        sample_count: 1,
-        window_resizable: true,
-        icon: Some(Icon::miniquad_logo()),
-    }
-}
+// fn main() {
+//     for _ in 0..10{
+//         println!("PRESS 1 TO RUN");
+//     }
+//     let mut to_handle = false;
+//     let size = 8;
+//     if !vec![1, 2, 4, 8].contains(&size){
+//         panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
+//     }
+//     let tile = 8 / size;
+//     let mut g = Grid::grid(size * 100, size * 100);
+//     g.random_burn();
+//     loop {
+//         clear_background(GREEN);
+//         if is_key_pressed(KeyCode::Escape){
+//             break
+//         }
+//
+//
+//         if is_key_pressed(KeyCode::Key1){
+//             to_handle = switch_bool(to_handle);
+//         }
+//
+//
+//         if to_handle
+//         {
+//             g.handle();
+//         } else if is_mouse_button_down(MouseButton::Left){
+//             let m_pos = mouse_position();
+//             let mut gg = &mut g.grid[(m_pos.1 as i32 / tile) as usize][(m_pos.0 as i32 / tile) as usize];
+//             if !gg.burnt{
+//                 gg.is_burning = false;
+//                 gg.burning_level = 0;
+//                 gg.burnt = true;
+//                 g.check_burning_positions[gg.position.y as usize].remove(gg.position.x as usize);
+//                 g.check_burning_positions[gg.position.y as usize].insert(gg.position.x as usize, true);
+//             }
+//         }
+//
+//         for y in &g.grid {
+//             for point in y {
+//                 if point.is_burning {
+//                     draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, RED);
+//                 } else if point.burnt{
+//                     draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, BLACK);
+//                 }
+//             }
+//         }
+//
+//         next_frame().await
+//     }
+// }
 
-#[macroquad::main(window_conf())]
-async fn main() {
+
+fn main() {
     for _ in 0..10{
-        println!("PRESS 1 TO RUN");
+        println!("// PRESS 1 TO RUN");
     }
     let mut to_handle = false;
     let size = 8;
@@ -201,43 +242,44 @@ async fn main() {
     let tile = 8 / size;
     let mut g = Grid::grid(size * 100, size * 100);
     g.random_burn();
-    loop {
-        clear_background(GREEN);
-        if is_key_pressed(KeyCode::Escape){
-            break
+
+    // Make a Context.
+    let (mut ctx, event_loop) = ContextBuilder::new("my_game", "Cool Game Author")
+        .build()
+        .expect("aieee, could not create ggez context!");
+
+    // Create an instance of your event handler.
+    // Usually, you should provide it with the Context object to
+    // use when setting your game up.
+    let my_game = MyGame::new(&mut ctx);
+
+    // Run!
+    event::run(ctx, event_loop, my_game);
+}
+
+
+struct MyGame {
+    // Your state here...
+}
+
+impl MyGame {
+    pub fn new(_ctx: &mut Context) -> MyGame {
+        // Load/create resources such as images here.
+        MyGame {
+            // ...
         }
+    }
+}
 
+impl EventHandler for MyGame {
+    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+        // Update code here...
+        Ok(())
+    }
 
-        if is_key_pressed(KeyCode::Key1){
-            to_handle = switch_bool(to_handle);
-        }
-
-
-        if to_handle
-        {
-            g.handle();
-        } else if is_mouse_button_down(MouseButton::Left){
-            let m_pos = mouse_position();
-            let mut gg = &mut g.grid[(m_pos.1 as i32 / tile) as usize][(m_pos.0 as i32 / tile) as usize];
-            if !gg.burnt{
-                gg.is_burning = false;
-                gg.burning_level = 0;
-                gg.burnt = true;
-                g.check_burning_positions[gg.position.y as usize].remove(gg.position.x as usize);
-                g.check_burning_positions[gg.position.y as usize].insert(gg.position.x as usize, true);
-            }
-        }
-
-        for y in &g.grid {
-            for point in y {
-                if point.is_burning {
-                    draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, RED);
-                } else if point.burnt{
-                    draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, BLACK);
-                }
-            }
-        }
-
-        next_frame().await
+    fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::clear(ctx, Color::WHITE);
+        // Draw code here...
+        graphics::present(ctx)
     }
 }
