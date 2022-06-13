@@ -33,7 +33,9 @@ cargo run --release
 
 ## Sims on going
 1 random burn
-![photo of the simulation](https://ibb.co/w01Pprm)
+
+![photo of the simulation](https://i.ibb.co/JBPGrFJ/image.png)
 
 4 random burns (two got merged)
-1[4 random burns (two got merged)](https://ibb.co/vdQTZmT)
+
+1[4 random burns (two got merged)](https://i.ibb.co/c8CZDtZ/image.png)
