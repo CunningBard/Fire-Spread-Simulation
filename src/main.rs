@@ -2,6 +2,7 @@ mod essential_functions;
 
 use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range, switch_bool};
 use ggez::{Context, ContextBuilder, GameResult};
+use ggez::conf::{FullscreenType, WindowMode};
 use ggez::graphics::{self, Color};
 use ggez::input::{mouse, keyboard};
 use ggez::event::{self, EventHandler, KeyCode, MouseButton};
@@ -168,11 +169,26 @@ fn main() {
         println!("PRESS 1 TO RUN");
     }
 
+    // let conf = WindowMode {
+    //     width: 500.0,
+    //     height: 500.0,
+    //     maximized: false,
+    //     fullscreen_type: FullscreenType::True,
+    //     borderless: false,
+    //     min_width: 0.0,
+    //     min_height: 0.0,
+    //     max_width: 0.0,
+    //     max_height: 0.0,
+    //     resizable: false,
+    //     visible: false,
+    //     resize_on_scale_factor_change: false
+    // };
     let (mut ctx, event_loop) = ContextBuilder::new("fireSpreadSim", "CunningBard")
         .build()
         .expect("aieee, could not create ggez context!");
+    graphics::set_window_title(&ctx, "fire spread simulatin");
 
-    let my_game = MyGame::new(&mut ctx, 800, 600, 5);
+    let my_game = MyGame::new(&mut ctx, 800, 600, 1);
     event::run(ctx, event_loop, my_game);
 }
 
