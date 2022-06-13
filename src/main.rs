@@ -190,6 +190,7 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf())]
 async fn main() {
+    // fps from 60 -> 10
     for _ in 0..10{
         println!("PRESS 1 TO RUN");
     }
