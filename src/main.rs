@@ -52,17 +52,19 @@ struct BurnablePoint
     is_burning: bool,
     burnt: bool,
     burning_level: u8,
-    position: Position
+    position: Position,
+    draw_position: (f32, f32),
 }
 
 impl BurnablePoint
 {
-    fn default(position: Position) -> Self {
+    fn default(position: Position, tile_size: i32) -> Self {
         Self {
             is_burning: false,
             burnt: false,
             burning_level: 0,
-            position
+            position,
+            draw_position: ((position.x * tile_size) as f32, (position.y * tile_size) as f32)
         }
     }
     fn burn(&mut self) -> bool {
@@ -94,12 +96,12 @@ struct Grid
     burning_positions: Vec<Position>,
 }
 impl Grid {
-    fn default(size_y: i32, size_x: i32) -> Self {
+    fn default(size_y: i32, size_x: i32, tile_size: i32) -> Self {
         let mut grid = vec![];
         for y in 0..size_y {
             let mut y_axis = vec![];
             for x in 0..size_x {
-                y_axis.push(BurnablePoint::default(Position::default(x, y)))
+                y_axis.push(BurnablePoint::default(Position::default(x, y), tile_size))
             }
             grid.push(y_axis);
         }
@@ -256,16 +258,18 @@ fn main() {
 
 struct MyGame {
     grid: Grid,
-    tile_size: i32
+    tile_size: f32
 }
 
 impl MyGame {
     pub fn new(_ctx: &mut Context, size: i32) -> Self {
+        // fps 70 -> 10
+        // fps 70 -> 37
     if !vec![1, 2, 4, 8].contains(&size){
         panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
     }
-    let tile_size = 8 / size;
-    let mut grid = Grid::default(size * 100, size * 100);
+    let tile_size = (8 / size) as f32;
+    let mut grid = Grid::default(size * 100, size * 100, tile_size as i32);
     grid.random_burn();
         
         Self {
@@ -278,6 +282,7 @@ impl MyGame {
 impl EventHandler for MyGame {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         self.grid.handle();
+        println!("{}", ggez::timer::fps(_ctx));
         Ok(())
     }
 
@@ -289,12 +294,12 @@ impl EventHandler for MyGame {
             for point in y {
                 if point.is_burning{
                     builder.rectangle(DrawMode::fill(),
-                                  Rect::new((point.position.x * self.tile_size) as f32, (point.position.y * self.tile_size)  as f32,
-                                            self.tile_size as f32, self.tile_size as f32), Color::RED)?;
+                                  Rect::new(point.draw_position.0, point.draw_position.1,
+                                            self.tile_size, self.tile_size), Color::RED)?;
                 } else if point.burnt{
                      builder.rectangle(DrawMode::fill(),
-                                  Rect::new((point.position.x * self.tile_size) as f32, (point.position.y * self.tile_size)  as f32,
-                                            self.tile_size as f32, self.tile_size as f32), Color::BLACK)?;
+                                  Rect::new(point.draw_position.0, point.draw_position.1,
+                                            self.tile_size, self.tile_size ), Color::BLACK)?;
 
                 }
             }
