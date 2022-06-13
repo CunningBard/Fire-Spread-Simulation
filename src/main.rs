@@ -2,7 +2,7 @@ mod essential_functions;
 
 use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range, switch_bool};
 use ggez::{Context, ContextBuilder, GameResult};
-use ggez::graphics::{self, Color, DrawMode, MeshBuilder, Rect};
+use ggez::graphics::{self, Color, DrawMode, Mesh, MeshBuilder, Rect};
 use ggez::event::{self, EventHandler};
 use glam;
 
@@ -29,7 +29,7 @@ fn surrounding_position(pos: &(i32, i32), max_x: i32, min_x: i32, max_y: i32, mi
 }
 
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone, Copy)]
 struct BurnablePoint
 {
     is_burning: bool,
@@ -74,10 +74,11 @@ struct Grid
 {
     size_x: i32,
     size_y: i32,
-    pub grid: Vec<Vec<BurnablePoint>>,
+    grid: Vec<Vec<BurnablePoint>>,
     check_burning_positions: Vec<Vec<bool>>,
     burning_positions: Vec<(i32, i32)>,
-    dead_pos: Vec<(f32, f32)>
+    dead_pos: Vec<(f32, f32)>,
+    previous_grid: Vec<Vec<BurnablePoint>>
 }
 impl Grid {
     fn default(size_y: i32, size_x: i32, tile_size: i32) -> Self {
@@ -105,7 +106,8 @@ impl Grid {
             size_y,
             check_burning_positions,
             burning_positions: vec![],
-            dead_pos: vec![]
+            dead_pos: vec![],
+            previous_grid: vec![]
         }
     }
 
@@ -119,6 +121,7 @@ impl Grid {
     }
 
     fn handle(&mut self){
+        self.previous_grid = self.grid.clone();
         let mut to_burn: Vec<(i32, i32)> = vec![];
         let mut remove = vec![];
         let mut remove_pos = vec![];
@@ -167,30 +170,11 @@ impl Grid {
     }
 }
 
-// fn main() {
-//     for _ in 0..10{
-//         println!("PRESS 1 TO RUN");
-//     }
 //     let mut to_handle = false;
-//     let size = 8;
-//     if !vec![1, 2, 4, 8].contains(&size){
-//         panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
-//     }
-//     let tile = 8 / size;
-//     let mut g = Grid::grid(size * 100, size * 100);
-//     g.random_burn();
-//     loop {
-//         clear_background(GREEN);
-//         if is_key_pressed(KeyCode::Escape){
-//             break
-//         }
-//
-//
+
 //         if is_key_pressed(KeyCode::Key1){
 //             to_handle = switch_bool(to_handle);
 //         }
-//
-//
 //         if to_handle
 //         {
 //             g.handle();
@@ -205,20 +189,6 @@ impl Grid {
 //                 g.check_burning_positions[gg.position.y as usize].insert(gg.position.x as usize, true);
 //             }
 //         }
-//
-//         for y in &g.grid {
-//             for point in y {
-//                 if point.is_burning {
-//                     draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, RED);
-//                 } else if point.burnt{
-//                     draw_rectangle((point.position.x * tile) as f32, (point.position.y * tile) as f32, tile as f32, tile as f32, BLACK);
-//                 }
-//             }
-//         }
-//
-//         next_frame().await
-//     }
-// }
 
 
 fn main() {
@@ -244,7 +214,9 @@ fn main() {
 
 struct MyGame {
     grid: Grid,
-    tile_size: f32
+    tile_size: f32,
+    times: i32,
+    builder: Vec<Mesh>
 }
 
 impl MyGame {
@@ -260,7 +232,9 @@ impl MyGame {
         
         Self {
             grid,
-            tile_size
+            tile_size,
+            times: 0,
+            builder: vec![]
         }
     }
 }
@@ -277,16 +251,37 @@ impl EventHandler for MyGame {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx, Color::GREEN);
+        graphics::clear(ctx, Color::BLACK);
+        let mut builder = MeshBuilder::new();
+        // if self.times < 2 {
+        //     for y in 0..self.grid.size_y {
+        //         for x in 0..self.grid.size_x{
+        //             draw_rect(&mut builder, x as f32, y as f32, self.tile_size, self.tile_size, Color::GREEN)?;
+        //         }
+        //     }
+        //     self.times += 5;
+        //     println!("Sd");
+        // }
 
         // let now = std::time::SystemTime::now();
-        let mut builder = MeshBuilder::new();
-        for point in &self.grid.burning_positions {
-            draw_rect(&mut builder, point.0 as f32, point.1 as f32,self.tile_size, self.tile_size, Color::RED)?;
-        }
-        for point in &self.grid.dead_pos {
-            draw_rect(&mut builder, point.0, point.1,self.tile_size, self.tile_size, Color::BLACK)?;
-        }
+        // for y in 0..self.grid.size_y {
+        //     for x in 0..self.grid.size_x{
+        //         if &self.grid.grid[y as usize][x as usize] != &self.grid.previous_grid[y as usize][x as usize]{
+        //             let pos: BurnablePoint = self.grid.grid[y as usize][x as usize];
+        //             if pos.burnt{
+        //                 draw_rect(&mut builder, pos.draw_position.0, pos.draw_position.1, self.tile_size, self.tile_size, Color::BLACK)?;
+        //             } else {
+        //                 draw_rect(&mut builder, pos.draw_position.0, pos.draw_position.1, self.tile_size, self.tile_size,Color::RED)?;
+        //             }
+        //         }
+        //     }
+        // }
+        // for point in &self.grid.burning_positions {
+        //     draw_rect(&mut builder, point.0 as f32, point.1 as f32,self.tile_size, self.tile_size, Color::RED)?;
+        // }
+        // for point in &self.grid.dead_pos {
+        //     draw_rect(&mut builder, point.0, point.1,self.tile_size, self.tile_size, Color::BLACK)?;
+        // }
         let res = builder.build(ctx)?;
 
         graphics::draw(ctx, &res, (glam::vec2(0.0, 0.0), 0.0, Color::WHITE))?;
