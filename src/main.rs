@@ -184,6 +184,7 @@ struct MyGame {
 
 impl MyGame {
     pub fn new(_ctx: &mut Context, size_x: i32, size_y: i32,  random_burns: i32) -> Self {
+        // 58.7 -> 58.7
         let mut grid = Grid::new(size_x, size_y);
         for _ in 0..random_burns {
             grid.random_burn()
@@ -223,6 +224,7 @@ impl EventHandler for MyGame {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        // let now = std::time::SystemTime::now();
         graphics::clear(ctx, Color::from((236, 236, 236, 255)));
         let mut g = vec![];
         for y in &self.grid.grid {
