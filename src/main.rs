@@ -172,7 +172,7 @@ fn main() {
         .build()
         .expect("aieee, could not create ggez context!");
 
-    let my_game = MyGame::new(&mut ctx, 800, 600, 1);
+    let my_game = MyGame::new(&mut ctx, 800, 600, 5);
     event::run(ctx, event_loop, my_game);
 }
 
