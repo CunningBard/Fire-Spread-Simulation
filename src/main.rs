@@ -2,8 +2,9 @@ mod essential_functions;
 
 use crate::essential_functions::{rand_item_index, rand_prob, rand_prob_, rand_range, switch_bool};
 use ggez::{Context, ContextBuilder, GameResult};
-use ggez::graphics::{self, Color};
+use ggez::graphics::{self, Color, DrawMode, MeshBuilder, Rect};
 use ggez::event::{self, EventHandler};
+use glam;
 
 
 const BURN_SURROUNDING_PROBABILITY: i32 = 30;
@@ -36,13 +37,14 @@ struct Position
 
 impl Position
 {
-    fn position(x: i32, y: i32) -> Position{
+    fn default(x: i32, y: i32) -> Position{
         Position{
             x,
             y
         }
     }
 }
+
 
 #[derive(PartialEq, Debug)]
 struct BurnablePoint
@@ -55,8 +57,8 @@ struct BurnablePoint
 
 impl BurnablePoint
 {
-    fn burnable_point(position: Position )-> BurnablePoint{
-        BurnablePoint {
+    fn default(position: Position) -> Self {
+        Self {
             is_burning: false,
             burnt: false,
             burning_level: 0,
@@ -81,6 +83,7 @@ impl BurnablePoint
     }
 }
 
+
 #[derive(Debug)]
 struct Grid
 {
@@ -90,14 +93,13 @@ struct Grid
     check_burning_positions: Vec<Vec<bool>>,
     burning_positions: Vec<Position>,
 }
-
 impl Grid {
-    fn grid(size_x: i32, size_y: i32) -> Grid{
+    fn default(size_y: i32, size_x: i32) -> Self {
         let mut grid = vec![];
         for y in 0..size_y {
             let mut y_axis = vec![];
             for x in 0..size_x {
-                y_axis.push(BurnablePoint::burnable_point(Position::position(x, y)))
+                y_axis.push(BurnablePoint::default(Position::default(x, y)))
             }
             grid.push(y_axis);
         }
@@ -111,7 +113,7 @@ impl Grid {
             check_burning_positions.push(y_axis);
         }
 
-        Grid {
+        Self {
             grid,
             size_x,
             size_y,
@@ -119,6 +121,7 @@ impl Grid {
             burning_positions: vec![]
         }
     }
+
     fn random_burn(&mut self){
         let rand_y = rand_range(0, self.size_x);
         let rand_x = rand_range(0, self.size_y);
@@ -235,13 +238,6 @@ fn main() {
         println!("// PRESS 1 TO RUN");
     }
     let mut to_handle = false;
-    let size = 8;
-    if !vec![1, 2, 4, 8].contains(&size){
-        panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
-    }
-    let tile = 8 / size;
-    let mut g = Grid::grid(size * 100, size * 100);
-    g.random_burn();
 
     // Make a Context.
     let (mut ctx, event_loop) = ContextBuilder::new("my_game", "Cool Game Author")
@@ -251,7 +247,7 @@ fn main() {
     // Create an instance of your event handler.
     // Usually, you should provide it with the Context object to
     // use when setting your game up.
-    let my_game = MyGame::new(&mut ctx);
+    let my_game = MyGame::new(&mut ctx, 4);
 
     // Run!
     event::run(ctx, event_loop, my_game);
@@ -259,27 +255,53 @@ fn main() {
 
 
 struct MyGame {
-    // Your state here...
+    grid: Grid,
+    tile_size: i32
 }
 
 impl MyGame {
-    pub fn new(_ctx: &mut Context) -> MyGame {
-        // Load/create resources such as images here.
-        MyGame {
-            // ...
+    pub fn new(_ctx: &mut Context, size: i32) -> Self {
+    if !vec![1, 2, 4, 8].contains(&size){
+        panic!("size must be able to divide 8 without remainders 1, 2, 4, 8")
+    }
+    let tile_size = 8 / size;
+    let mut grid = Grid::default(size * 100, size * 100);
+    grid.random_burn();
+        
+        Self {
+            grid,
+            tile_size
         }
     }
 }
 
 impl EventHandler for MyGame {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        // Update code here...
+        self.grid.handle();
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx, Color::WHITE);
-        // Draw code here...
+        graphics::clear(ctx, Color::GREEN);
+
+        let mut builder = MeshBuilder::new();
+        for y in &self.grid.grid{
+            for point in y {
+                if point.is_burning{
+                    builder.rectangle(DrawMode::fill(),
+                                  Rect::new((point.position.x * self.tile_size) as f32, (point.position.y * self.tile_size)  as f32,
+                                            self.tile_size as f32, self.tile_size as f32), Color::RED)?;
+                } else if point.burnt{
+                     builder.rectangle(DrawMode::fill(),
+                                  Rect::new((point.position.x * self.tile_size) as f32, (point.position.y * self.tile_size)  as f32,
+                                            self.tile_size as f32, self.tile_size as f32), Color::BLACK)?;
+
+                }
+            }
+        }
+        let res = builder.build(ctx)?;
+
+        graphics::draw(ctx, &res, (glam::vec2(0.0, 0.0), 0.0, Color::WHITE))?;
         graphics::present(ctx)
     }
 }
