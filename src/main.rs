@@ -17,7 +17,7 @@ const BURN_LIFETIME: u8 = 5; // how long burning lasts
 // ];
 
 fn surrounding_position(pos: &(i32, i32), max_x: i32, min_x: i32, max_y: i32, min_y: i32) -> Vec<(i32, i32)>{
-    // will get the sounding positions of a point, will remove if position is not within parameters
+    // will get the surrounding positions of a point, will remove if position is not within parameters
 
     let minus_positions = vec![
     vec![-1, -1], vec![ 0, -1], vec![ 1, -1],
