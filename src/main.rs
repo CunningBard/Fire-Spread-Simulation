@@ -26,7 +26,7 @@ fn surrounding_position(pos: &(i32, i32), max_x: i32, min_x: i32, max_y: i32, mi
     ];
     // make constant if possible
 
-    let mut positions = vec![]; // position to send
+    let mut positions = vec![]; // position to send back
 
     for position in &minus_positions {
         let x = pos.0 + position[0];
@@ -86,7 +86,7 @@ struct Grid
     size_x: i32,
     size_y: i32,
     grid: Vec<Vec<BurnablePoint>>,
-    check_burning_positions: Vec<Vec<bool>>,
+    check_burning_positions: Vec<Vec<bool>>, // positions that are already burning or burn
     burning_positions: Vec<(i32, i32)>,
 }
 impl Grid {
